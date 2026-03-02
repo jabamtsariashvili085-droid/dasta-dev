@@ -57,13 +57,17 @@ export default function OnboardingPage() {
                 }
 
                 setBranch(branchData)
-                if (branchData.branch_settings) {
+                const branchSettings = Array.isArray(branchData.branch_settings)
+                    ? branchData.branch_settings[0]
+                    : branchData.branch_settings
+
+                if (branchSettings) {
                     setSettings({
-                        vat_rate: branchData.branch_settings.vat_rate || 18,
-                        currency: branchData.branch_settings.currency || 'GEL',
-                        receipt_header: branchData.branch_settings.receipt_header || branchData.name,
-                        receipt_footer: branchData.branch_settings.receipt_footer || 'გმადლობთ, რომ სარგებლობთ ჩვენი მომსახურებით!',
-                        low_stock_threshold: branchData.branch_settings.low_stock_threshold || 5
+                        vat_rate: branchSettings.vat_rate || 18,
+                        currency: branchSettings.currency || 'GEL',
+                        receipt_header: branchSettings.receipt_header || branchData.name,
+                        receipt_footer: branchSettings.receipt_footer || 'გმადლობთ, რომ სარგებლობთ ჩვენი მომსახურებით!',
+                        low_stock_threshold: branchSettings.low_stock_threshold || 5
                     })
                 }
             } catch (err: any) {
@@ -78,6 +82,11 @@ export default function OnboardingPage() {
     }, [supabase, router])
 
     const handleComplete = async () => {
+        if (!branch?.id) {
+            toast.error('ფილიალის იდენტიფიკატორი ვერ მოიძებნა')
+            return
+        }
+
         setSaving(true)
         try {
             const { error } = await supabase
@@ -85,16 +94,26 @@ export default function OnboardingPage() {
                 .update({
                     ...settings,
                     onboarding_done: true,
-                    updated_at: new Date()
+                    updated_at: new Date().toISOString()
                 })
                 .eq('branch_id', branch.id)
 
-            if (error) throw error
+            if (error) {
+                console.error('Update Settings Error:', error)
+                throw error
+            }
 
             toast.success('კონფიგურაცია წარმატებით დასრულდა!')
-            router.push(`/${branch.id}`)
+
+            // Short delay to ensure success toast is visible and state settles
+            setTimeout(() => {
+                router.push(`/${branch.id}`)
+                router.refresh()
+            }, 500)
+
         } catch (error: any) {
-            toast.error('შეცდომა: ' + error.message)
+            console.error('Onboarding Complete Error:', error)
+            toast.error('შენახვისას დაფიქსირდა შეცდომა: ' + (error.message || 'უცნობი შეცდომა'))
         } finally {
             setSaving(false)
         }

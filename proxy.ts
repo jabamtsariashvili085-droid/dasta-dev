@@ -40,10 +40,12 @@ export async function proxy(request: NextRequest) {
 
     const { data: { session } } = await supabase.auth.getSession()
 
-    // Protect dashboard routes
-    const isDashboardRoute = request.nextUrl.pathname.includes('/[branchId]') ||
-        request.nextUrl.pathname === '/company' ||
-        request.nextUrl.pathname.startsWith('/company/')
+    // Protect dashboard routes (anything that looks like /uuid or /company)
+    const pathname = request.nextUrl.pathname
+    const isDashboardRoute = /^\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(pathname) ||
+        pathname === '/company' ||
+        pathname.startsWith('/company/') ||
+        pathname === '/onboarding'
 
     if (isDashboardRoute && !session) {
         return NextResponse.redirect(new URL('/login', request.url))
