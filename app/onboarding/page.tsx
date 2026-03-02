@@ -37,22 +37,30 @@ export default function OnboardingPage() {
                     return
                 }
 
-                // Get the first branch the user belongs to
-                // We join with branch_users to ensure we only get branches this user is linked to
+                // 1. Find the branch this user is linked to
+                const { data: userBranch } = await supabase
+                    .from('branch_users')
+                    .select('branch_id')
+                    .eq('user_id', user.id)
+                    .limit(1)
+                    .maybeSingle()
+
+                if (!userBranch) {
+                    console.error('No branch user link found')
+                    toast.error('თქვენი ანგარიში არ არის დაკავშირებული ფილიალთან.')
+                    return
+                }
+
+                // 2. Fetch branch and settings separately for maximum reliability
                 const { data: branchData, error: branchError } = await supabase
                     .from('branches')
-                    .select(`
-                        *,
-                        branch_settings (*),
-                        branch_users!inner(user_id)
-                    `)
-                    .eq('branch_users.user_id', user.id)
-                    .limit(1)
+                    .select('*, branch_settings(*)')
+                    .eq('id', userBranch.branch_id)
                     .single()
 
                 if (branchError || !branchData) {
-                    console.error('Onboarding Error:', branchError)
-                    toast.error('ფილიალი ვერ მოიძებნა. დაუკავშირდით ადმინისტრაციას.')
+                    console.error('Onboarding Fetch Error:', branchError)
+                    toast.error('ფილიალის მონაცემები ვერ ჩაიტვირთა')
                     return
                 }
 
@@ -105,11 +113,10 @@ export default function OnboardingPage() {
 
             toast.success('კონფიგურაცია წარმატებით დასრულდა!')
 
-            // Short delay to ensure success toast is visible and state settles
+            // USE HARD REDIRECT to bypass any client-side routing issues
             setTimeout(() => {
-                router.push(`/${branch.id}`)
-                router.refresh()
-            }, 500)
+                window.location.href = `/${branch.id}`
+            }, 800)
 
         } catch (error: any) {
             console.error('Onboarding Complete Error:', error)
