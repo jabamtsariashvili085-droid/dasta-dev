@@ -1,4 +1,24 @@
-export default function Home() {
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+
+export default async function Home() {
+  const supabase = await createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+
+  if (session) {
+    const { data: branchData } = await supabase
+      .from('branch_users')
+      .select('branch_id')
+      .limit(1)
+      .single()
+
+    if (branchData) {
+      redirect(`/${branchData.branch_id}`)
+    } else {
+      redirect('/onboarding')
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center animate-fade">
       <div className="sidebar-logo-mark mb-6">D</div>
