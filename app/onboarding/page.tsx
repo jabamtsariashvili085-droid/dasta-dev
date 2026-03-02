@@ -30,38 +30,48 @@ export default function OnboardingPage() {
 
     useEffect(() => {
         const fetchOnboardingData = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) {
-                router.push('/login')
-                return
-            }
+            try {
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) {
+                    router.push('/login')
+                    return
+                }
 
-            // Get the first branch the user belongs to
-            const { data: branchData, error: branchError } = await supabase
-                .from('branches')
-                .select(`
-          *,
-          branch_settings (*)
-        `)
-                .limit(1)
-                .single()
+                // Get the first branch the user belongs to
+                // We join with branch_users to ensure we only get branches this user is linked to
+                const { data: branchData, error: branchError } = await supabase
+                    .from('branches')
+                    .select(`
+                        *,
+                        branch_settings (*),
+                        branch_users!inner(user_id)
+                    `)
+                    .eq('branch_users.user_id', user.id)
+                    .limit(1)
+                    .single()
 
-            if (branchError || !branchData) {
-                toast.error('ფილიალი ვერ მოიძებნა')
-                return
-            }
+                if (branchError || !branchData) {
+                    console.error('Onboarding Error:', branchError)
+                    toast.error('ფილიალი ვერ მოიძებნა. დაუკავშირდით ადმინისტრაციას.')
+                    return
+                }
 
-            setBranch(branchData)
-            if (branchData.branch_settings) {
-                setSettings({
-                    vat_rate: branchData.branch_settings.vat_rate || 18,
-                    currency: branchData.branch_settings.currency || 'GEL',
-                    receipt_header: branchData.branch_settings.receipt_header || branchData.name,
-                    receipt_footer: branchData.branch_settings.receipt_footer || 'გმადლობთ, რომ სარგებლობთ ჩვენი მომსახურებით!',
-                    low_stock_threshold: branchData.branch_settings.low_stock_threshold || 5
-                })
+                setBranch(branchData)
+                if (branchData.branch_settings) {
+                    setSettings({
+                        vat_rate: branchData.branch_settings.vat_rate || 18,
+                        currency: branchData.branch_settings.currency || 'GEL',
+                        receipt_header: branchData.branch_settings.receipt_header || branchData.name,
+                        receipt_footer: branchData.branch_settings.receipt_footer || 'გმადლობთ, რომ სარგებლობთ ჩვენი მომსახურებით!',
+                        low_stock_threshold: branchData.branch_settings.low_stock_threshold || 5
+                    })
+                }
+            } catch (err: any) {
+                console.error('Onboarding Catch Error:', err)
+                toast.error('დაფიქსირდა მოულოდნელი შეცდომა')
+            } finally {
+                setLoading(false)
             }
-            setLoading(false)
         }
 
         fetchOnboardingData()
