@@ -106,18 +106,20 @@ export default function RegisterPage() {
             if (settingsError) throw settingsError
 
             // 5. Link User to Company (as owner/admin)
-            await supabase.from('company_users').insert({
+            const { error: companyUserError } = await supabase.from('company_users').insert({
                 company_id: company.id,
                 user_id: userId,
                 role: 'admin'
             })
+            if (companyUserError) throw new Error('კომპანიასთან დაკავშირება ვერ მოხერხდა: ' + companyUserError.message)
 
             // 6. Link User to Branch
-            await supabase.from('branch_users').insert({
+            const { error: branchUserError } = await supabase.from('branch_users').insert({
                 branch_id: branch.id,
                 user_id: userId,
                 role: 'manager'
             })
+            if (branchUserError) throw new Error('ფილიალთან დაკავშირება ვერ მოხერხდა: ' + branchUserError.message)
 
             toast.success('რეგისტრაცია წარმატებით დასრულდა!')
             router.push('/onboarding')

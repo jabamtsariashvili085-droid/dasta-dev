@@ -241,14 +241,16 @@ export default function OnboardingPage() {
                     </button>
 
                     {/* Fallback link if automatic redirection fails */}
-                    <div className="mt-4 text-center">
-                        <p className="text-xs text-gray-400">
-                            პრობლემაა გადასვლისას?
-                            <a href={`/${branch.id}`} className="text-brand-600 font-medium hover:underline ml-1">
-                                პირდაპირ სამუშაო დაფაზე გადასვლა
-                            </a>
-                        </p>
-                    </div>
+                    {branch && (
+                        <div className="mt-4 text-center">
+                            <p className="text-xs text-gray-400">
+                                პრობლემაა გადასვლისას?
+                                <a href={`/${branch.id}`} className="text-brand-600 font-medium hover:underline ml-1">
+                                    პირდაპირ სამუშაო დაფაზე გადასვლა
+                                </a>
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
