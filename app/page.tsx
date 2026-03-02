@@ -6,14 +6,15 @@ export default async function Home() {
   const { data: { session } } = await supabase.auth.getSession()
 
   if (session) {
-    const { data: branchData } = await supabase
+    const { data: branchLink } = await supabase
       .from('branch_users')
       .select('branch_id')
+      .eq('user_id', session.user.id)
       .limit(1)
-      .single()
+      .maybeSingle()
 
-    if (branchData) {
-      redirect(`/${branchData.branch_id}`)
+    if (branchLink?.branch_id) {
+      redirect(`/${branchLink.branch_id}`)
     } else {
       redirect('/onboarding')
     }
