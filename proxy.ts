@@ -42,7 +42,7 @@ export async function proxy(request: NextRequest) {
 
     // Protect dashboard routes (anything that looks like /uuid or /company)
     const pathname = request.nextUrl.pathname
-    const isDashboardRoute = /^\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(pathname) ||
+    const isDashboardRoute = /^\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(\/|$)/i.test(pathname) ||
         pathname === '/company' ||
         pathname.startsWith('/company/') ||
         pathname === '/onboarding'
