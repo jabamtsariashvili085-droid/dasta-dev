@@ -29,7 +29,20 @@ interface SidebarProps {
     branchId: string
 }
 
-const navGroups = [
+interface NavItem {
+    label: string
+    icon: any
+    href: string
+    badge?: number
+    external?: boolean
+}
+
+interface NavGroup {
+    label: string
+    items: NavItem[]
+}
+
+const navGroups: NavGroup[] = [
     {
         label: 'მთავარი',
         items: [
