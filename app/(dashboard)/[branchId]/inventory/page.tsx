@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     Plus,
@@ -20,7 +20,8 @@ import { toast } from 'react-hot-toast'
 import ProductModal from '@/components/inventory/ProductModal'
 import { cn } from '@/lib/utils'
 
-export default function InventoryPage({ params }: { params: { branchId: string } }) {
+export default function InventoryPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = use(params)
     const [products, setProducts] = useState<any[]>([])
     const [categories, setCategories] = useState<any[]>([])
     const [loading, setLoading] = useState(true)

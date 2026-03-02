@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     Building2,
@@ -14,7 +14,8 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
-export default function BranchSettingsPage({ params }: { params: { branchId: string } }) {
+export default function BranchSettingsPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = use(params)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [branch, setBranch] = useState<any>(null)
@@ -27,7 +28,7 @@ export default function BranchSettingsPage({ params }: { params: { branchId: str
             const { data: branchData } = await supabase
                 .from('branches')
                 .select('*, branch_settings(*)')
-                .eq('id', params.branchId)
+                .eq('id', branchId)
                 .single()
 
             if (branchData) {
@@ -37,7 +38,7 @@ export default function BranchSettingsPage({ params }: { params: { branchId: str
             setLoading(false)
         }
         fetchData()
-    }, [supabase, params.branchId])
+    }, [supabase, branchId])
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -52,7 +53,7 @@ export default function BranchSettingsPage({ params }: { params: { branchId: str
                     address: branch.address,
                     phone: branch.phone
                 })
-                .eq('id', params.branchId)
+                .eq('id', branchId)
 
             if (bError) throw bError
 
@@ -66,7 +67,7 @@ export default function BranchSettingsPage({ params }: { params: { branchId: str
                     receipt_header: settings.receipt_header,
                     receipt_footer: settings.receipt_footer
                 })
-                .eq('branch_id', params.branchId)
+                .eq('branch_id', branchId)
 
             if (sError) throw sError
 

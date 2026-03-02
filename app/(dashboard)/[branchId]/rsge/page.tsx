@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     Key,
@@ -13,7 +13,8 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
-export default function RSGESettingsPage({ params }: { params: { branchId: string } }) {
+export default function RSGESettingsPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = use(params)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [su, setSu] = useState('')
@@ -26,7 +27,7 @@ export default function RSGESettingsPage({ params }: { params: { branchId: strin
             const { data, error } = await supabase
                 .from('branch_settings')
                 .select('rs_su, rs_sp')
-                .eq('branch_id', params.branchId)
+                .eq('branch_id', branchId)
                 .single()
 
             if (data) {
@@ -36,7 +37,7 @@ export default function RSGESettingsPage({ params }: { params: { branchId: strin
             setLoading(false)
         }
         fetchSettings()
-    }, [supabase, params.branchId])
+    }, [supabase, branchId])
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -46,7 +47,7 @@ export default function RSGESettingsPage({ params }: { params: { branchId: strin
             const { error } = await supabase
                 .from('branch_settings')
                 .update({ rs_su: su, rs_sp: sp })
-                .eq('branch_id', params.branchId)
+                .eq('branch_id', branchId)
 
             if (error) throw error
             toast.success('RS.GE პარამეტრები შენახულია')

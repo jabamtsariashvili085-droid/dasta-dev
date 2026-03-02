@@ -11,7 +11,8 @@ import {
     History
 } from 'lucide-react'
 
-export default function DashboardPage({ params }: { params: { branchId: string } }) {
+export default async function DashboardPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = await params
     return (
         <div className="animate-fade">
             {/* Page Header */}

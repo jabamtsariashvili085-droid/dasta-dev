@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     Plus,
@@ -17,7 +17,8 @@ import {
 import { toast } from 'react-hot-toast'
 import { cn, formatCurrency, formatDate } from '@/lib/utils'
 
-export default function InvoicesPage({ params }: { params: { branchId: string } }) {
+export default function InvoicesPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = use(params)
     const [invoices, setInvoices] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
@@ -29,7 +30,7 @@ export default function InvoicesPage({ params }: { params: { branchId: string } 
         const { data, error } = await supabase
             .from('rs_documents')
             .select('*')
-            .eq('branch_id', params.branchId)
+            .eq('branch_id', branchId)
             .eq('doc_type', 'invoice')
             .order('created_at', { ascending: false })
 
@@ -39,7 +40,7 @@ export default function InvoicesPage({ params }: { params: { branchId: string } 
             setInvoices(data || [])
         }
         setLoading(false)
-    }, [supabase, params.branchId])
+    }, [supabase, branchId])
 
     useEffect(() => {
         fetchInvoices()

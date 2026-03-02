@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     BarChart3,
@@ -19,7 +19,8 @@ import {
 import { toast } from 'react-hot-toast'
 import { cn, formatCurrency } from '@/lib/utils'
 
-export default function ReportsPage({ params }: { params: { branchId: string } }) {
+export default function ReportsPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = use(params)
     const [loading, setLoading] = useState(true)
     const [stats, setStats] = useState({
         revenue: 0,
@@ -39,7 +40,7 @@ export default function ReportsPage({ params }: { params: { branchId: string } }
         const { data: sales, error } = await supabase
             .from('sales')
             .select('*, sale_items(*, products(purchase_price))')
-            .eq('branch_id', params.branchId)
+            .eq('branch_id', branchId)
             .eq('status', 'completed')
 
         if (error) {
@@ -70,7 +71,7 @@ export default function ReportsPage({ params }: { params: { branchId: string } }
             })
         }
         setLoading(false)
-    }, [supabase, params.branchId])
+    }, [supabase, branchId])
 
     useEffect(() => {
         fetchReports()

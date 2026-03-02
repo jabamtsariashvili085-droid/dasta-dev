@@ -1,16 +1,17 @@
 import Sidebar from '@/components/layout/Sidebar'
 import Topbar from '@/components/layout/Topbar'
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
     children,
     params,
 }: {
     children: React.ReactNode
-    params: { branchId: string }
+    params: Promise<{ branchId: string }>
 }) {
+    const { branchId } = await params
     return (
         <div className="dashboard-layout">
-            <Sidebar branchId={params.branchId} />
+            <Sidebar branchId={branchId} />
 
             <div className="flex flex-col min-h-screen max-h-screen overflow-hidden">
                 <Topbar />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     Search,
@@ -19,7 +19,8 @@ import {
 import { toast } from 'react-hot-toast'
 import { cn, formatCurrency, formatDate } from '@/lib/utils'
 
-export default function SalesHistoryPage({ params }: { params: { branchId: string } }) {
+export default function SalesHistoryPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = use(params)
     const [sales, setSales] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
@@ -38,7 +39,7 @@ export default function SalesHistoryPage({ params }: { params: { branchId: strin
         let query = supabase
             .from('sales')
             .select('*, branch_users(user_id)')
-            .eq('branch_id', params.branchId)
+            .eq('branch_id', branchId)
             .order('created_at', { ascending: false })
 
         if (paymentFilter !== 'all') {
@@ -53,7 +54,7 @@ export default function SalesHistoryPage({ params }: { params: { branchId: strin
             setSales(data || [])
         }
         setLoading(false)
-    }, [supabase, params.branchId, paymentFilter])
+    }, [supabase, branchId, paymentFilter])
 
     useEffect(() => {
         fetchSales()

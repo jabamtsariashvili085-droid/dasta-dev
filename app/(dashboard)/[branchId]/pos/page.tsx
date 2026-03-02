@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     Search,
@@ -23,7 +23,8 @@ import { cn, formatCurrency } from '@/lib/utils'
 import ThermalReceipt from '@/components/pos/ThermalReceipt'
 import ZReport from '@/components/pos/ZReport'
 
-export default function POSPage({ params }: { params: { branchId: string } }) {
+export default function POSPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = use(params)
     const [products, setProducts] = useState<any[]>([])
     const [categories, setCategories] = useState<any[]>([])
     const [activeCategory, setActiveCategory] = useState('all')
@@ -65,7 +66,7 @@ export default function POSPage({ params }: { params: { branchId: string } }) {
         const { data: branchData } = await supabase
             .from('branches')
             .select('*, branch_settings(*)')
-            .eq('id', params.branchId)
+            .eq('id', branchId)
             .single()
 
         if (branchData) {
@@ -174,7 +175,7 @@ export default function POSPage({ params }: { params: { branchId: string } }) {
             const { data: sale, error: saleError } = await supabase
                 .from('sales')
                 .insert({
-                    branch_id: params.branchId,
+                    branch_id: branchId,
                     user_id: user?.id,
                     total_amount: total,
                     payment_method: paymentMethod as any,
@@ -236,7 +237,7 @@ export default function POSPage({ params }: { params: { branchId: string } }) {
         const { data: todaySales } = await supabase
             .from('sales')
             .select('*')
-            .eq('branch_id', params.branchId)
+            .eq('branch_id', branchId)
             .eq('status', 'completed')
             .gte('created_at', today.toISOString())
 

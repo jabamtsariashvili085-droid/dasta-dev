@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Plus, Search, Pencil, Trash2, FolderTree, Loader2 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
-export default function CategoriesPage({ params }: { params: { branchId: string } }) {
+export default function CategoriesPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = use(params)
     const [categories, setCategories] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')

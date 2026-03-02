@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     Users,
@@ -16,7 +16,8 @@ import {
 import { toast } from 'react-hot-toast'
 import { cn } from '@/lib/utils'
 
-export default function BranchUsersPage({ params }: { params: { branchId: string } }) {
+export default function BranchUsersPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = use(params)
     const [users, setUsers] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -27,7 +28,7 @@ export default function BranchUsersPage({ params }: { params: { branchId: string
         const { data, error } = await supabase
             .from('branch_users')
             .select('*, users(*)')
-            .eq('branch_id', params.branchId)
+            .eq('branch_id', branchId)
 
         if (error) {
             toast.error('მომხმარებლების ჩატვირთვა ვერ მოხერხდა')
@@ -35,7 +36,7 @@ export default function BranchUsersPage({ params }: { params: { branchId: string
             setUsers(data || [])
         }
         setLoading(false)
-    }, [supabase, params.branchId])
+    }, [supabase, branchId])
 
     useEffect(() => {
         fetchUsers()

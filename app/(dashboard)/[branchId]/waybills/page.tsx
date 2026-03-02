@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     Plus,
@@ -18,7 +18,8 @@ import {
 import { toast } from 'react-hot-toast'
 import { cn, formatCurrency, formatDate } from '@/lib/utils'
 
-export default function WaybillsPage({ params }: { params: { branchId: string } }) {
+export default function WaybillsPage({ params }: { params: Promise<{ branchId: string }> }) {
+    const { branchId } = use(params)
     const [waybills, setWaybills] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
@@ -31,7 +32,7 @@ export default function WaybillsPage({ params }: { params: { branchId: string } 
         let query = supabase
             .from('rs_documents')
             .select('*')
-            .eq('branch_id', params.branchId)
+            .eq('branch_id', branchId)
             .eq('doc_type', 'waybill')
             .order('created_at', { ascending: false })
 
@@ -46,7 +47,7 @@ export default function WaybillsPage({ params }: { params: { branchId: string } 
             setWaybills(data || [])
         }
         setLoading(false)
-    }, [supabase, params.branchId, statusFilter])
+    }, [supabase, branchId, statusFilter])
 
     useEffect(() => {
         fetchWaybills()
